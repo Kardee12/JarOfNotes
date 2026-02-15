@@ -3,6 +3,16 @@ import { letters, moments } from "./data/letters";
 
 const STORAGE_KEY = "open-when-opened-letters";
 const CONFETTI_COLORS = ["#f28cae", "#f7b267", "#6bbfd8", "#8fd694", "#9d8df1", "#f3e88b"];
+const NIGHT_THEME = {
+  base: "#0d1422",
+  card: "rgba(35, 44, 71, 0.54)",
+  border: "rgba(131, 146, 187, 0.48)",
+  accent: "#88aef6",
+  accentDeep: "#c0d3ff",
+  statusBg: "rgba(104, 127, 179, 0.45)",
+  overlayStart: "rgba(25, 34, 58, 0.36)",
+  overlayEnd: "rgba(14, 20, 33, 0.66)"
+};
 const DAILY_THEMES = [
   {
     base: "#f5e9ef",
@@ -132,14 +142,44 @@ function playCelebrationChime() {
   }
 }
 
+function createStars() {
+  return Array.from({ length: 44 }, (_, index) => ({
+    id: `star-${index}`,
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    size: `${1 + Math.random() * 2.4}px`,
+    delay: `${Math.random() * 3.8}s`,
+    duration: `${2.2 + Math.random() * 3.2}s`,
+    layer: index % 2 === 0 ? "near" : "far"
+  }));
+}
+
+function createHeartBurstPieces() {
+  const hearts = ["❤", "💗", "💖", "💞"];
+  return Array.from({ length: 22 }, (_, index) => ({
+    id: `${Date.now()}-heart-${index}`,
+    icon: hearts[index % hearts.length],
+    left: `${40 + Math.random() * 20}%`,
+    delay: `${Math.random() * 0.22}s`,
+    duration: `${1.8 + Math.random() * 1.1}s`,
+    drift: `${-110 + Math.random() * 220}px`,
+    size: `${13 + Math.random() * 13}px`,
+    rotate: `${Math.random() * 50 - 25}deg`
+  }));
+}
+
 export default function App() {
   const backgroundPhotos = ["/photos/us-1.jpg", "/photos/us-2.jpg", "/photos/us-3.jpg", "/photos/us-4.jpg"];
   const [openedIds, setOpenedIds] = useState([]);
   const [activeLetterId, setActiveLetterId] = useState(null);
   const [confettiPieces, setConfettiPieces] = useState([]);
+  const [heartBurstPieces, setHeartBurstPieces] = useState([]);
   const [displayPhotos, setDisplayPhotos] = useState([]);
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const confettiTimeoutRef = useRef(null);
+  const heartBurstTimeoutRef = useRef(null);
+  const keyBufferRef = useRef("");
+  const stars = useMemo(() => createStars(), []);
 
   const theme = useMemo(() => {
     const now = new Date();
@@ -180,6 +220,11 @@ export default function App() {
       }),
     []
   );
+  const isNightMode = useMemo(() => {
+    const hour = currentTime.getHours();
+    return hour >= 21 || hour < 6;
+  }, [currentTime]);
+  const shellTheme = isNightMode ? NIGHT_THEME : theme;
 
   useEffect(() => {
     setOpenedIds(loadOpenedLetters());
@@ -213,9 +258,38 @@ export default function App() {
       if (confettiTimeoutRef.current) {
         window.clearTimeout(confettiTimeoutRef.current);
       }
+      if (heartBurstTimeoutRef.current) {
+        window.clearTimeout(heartBurstTimeoutRef.current);
+      }
     },
     []
   );
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.key.length !== 1) return;
+
+      const targetTag = event.target?.tagName;
+      if (targetTag === "INPUT" || targetTag === "TEXTAREA") return;
+
+      keyBufferRef.current = `${keyBufferRef.current}${event.key.toLowerCase()}`.slice(-12);
+      if (keyBufferRef.current.endsWith("hug")) {
+        setHeartBurstPieces(createHeartBurstPieces());
+        if (heartBurstTimeoutRef.current) {
+          window.clearTimeout(heartBurstTimeoutRef.current);
+        }
+        heartBurstTimeoutRef.current = window.setTimeout(() => {
+          setHeartBurstPieces([]);
+        }, 2200);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
 
   const triggerCelebration = () => {
     setConfettiPieces(createConfettiPieces());
@@ -248,7 +322,9 @@ export default function App() {
     });
   };
 
-  const closeModal = () => setActiveLetterId(null);
+  const closeModal = () => {
+    setActiveLetterId(null);
+  };
   const resetOpenedLetters = () => {
     setOpenedIds([]);
     saveOpenedLetters([]);
@@ -261,16 +337,16 @@ export default function App() {
 
   return (
     <div
-      className="app-shell"
+      className={`app-shell ${isNightMode ? "is-night" : ""}`}
       style={{
-        "--bg-base": theme.base,
-        "--card": theme.card,
-        "--card-border": theme.border,
-        "--accent": theme.accent,
-        "--accent-deep": theme.accentDeep,
-        "--status-bg": theme.statusBg,
-        "--overlay-start": theme.overlayStart,
-        "--overlay-end": theme.overlayEnd
+        "--bg-base": shellTheme.base,
+        "--card": shellTheme.card,
+        "--card-border": shellTheme.border,
+        "--accent": shellTheme.accent,
+        "--accent-deep": shellTheme.accentDeep,
+        "--status-bg": shellTheme.statusBg,
+        "--overlay-start": shellTheme.overlayStart,
+        "--overlay-end": shellTheme.overlayEnd
       }}
     >
       <div className="bg-slideshow" aria-hidden="true">
@@ -279,6 +355,21 @@ export default function App() {
             key={photo}
             className="bg-slide"
             style={{ backgroundImage: `url(${photo})`, animationDelay: `${index * 10}s` }}
+          />
+        ))}
+      </div>
+      <div className={`night-sky ${isNightMode ? "is-visible" : ""}`} aria-hidden="true">
+        {stars.map((star) => (
+          <span
+            key={star.id}
+            className={`night-star is-${star.layer}`}
+            style={{
+              "--left": star.left,
+              "--top": star.top,
+              "--size": star.size,
+              "--delay": star.delay,
+              "--duration": star.duration
+            }}
           />
         ))}
       </div>
@@ -367,37 +458,39 @@ export default function App() {
                 ×
               </button>
 
-              <p className="modal-kicker">Open note</p>
-              <h3 id="letter-title">{activeLetter.title}</h3>
+              <div className="modal-content">
+                <p className="modal-kicker">Open note</p>
+                <h3 id="letter-title">{activeLetter.title}</h3>
 
-              <p className="modal-note">{activeLetter.note}</p>
+                <p className="modal-note">{activeLetter.note}</p>
 
-              {displayPhotos.length > 0 && (
-                <section className="photo-strip" aria-label="Letter photos">
-                  <div className="photo-strip-head">
-                    <p>Polaroid Shuffle Mode</p>
-                    <button className="shuffle-button" type="button" onClick={reshufflePolaroids}>
-                      Shuffle Photos
-                    </button>
-                  </div>
+                {displayPhotos.length > 0 && (
+                  <section className="photo-strip" aria-label="Letter photos">
+                    <div className="photo-strip-head">
+                      <p>Polaroid Shuffle Mode</p>
+                      <button className="shuffle-button" type="button" onClick={reshufflePolaroids}>
+                        Shuffle Photos
+                      </button>
+                    </div>
 
-                  {displayPhotos.map((photo, index) => (
-                    <figure
-                      key={`${photo.src}-${photo.tilt}-${index}`}
-                      className="polaroid"
-                      style={{ "--tilt": photo.tilt }}
-                    >
-                      <img src={photo.src} alt={photo.alt} loading="lazy" />
-                    </figure>
-                  ))}
-                </section>
-              )}
+                    {displayPhotos.map((photo, index) => (
+                      <figure
+                        key={`${photo.src}-${photo.tilt}-${index}`}
+                        className="polaroid"
+                        style={{ "--tilt": photo.tilt }}
+                      >
+                        <img src={photo.src} alt={photo.alt} loading="lazy" />
+                      </figure>
+                    ))}
+                  </section>
+                )}
 
-              {activeLetter.promise && (
-                <p className="promise">
-                  <strong>Promise:</strong> {activeLetter.promise}
-                </p>
-              )}
+                {activeLetter.promise && (
+                  <p className="promise">
+                    <strong>Promise:</strong> {activeLetter.promise}
+                  </p>
+                )}
+              </div>
             </article>
           </div>
         )}
@@ -418,6 +511,24 @@ export default function App() {
               "--piece-color": piece.color
             }}
           />
+        ))}
+      </div>
+      <div className={`heart-burst-layer ${heartBurstPieces.length > 0 ? "is-active" : ""}`} aria-hidden="true">
+        {heartBurstPieces.map((piece) => (
+          <span
+            key={piece.id}
+            className="heart-burst-piece"
+            style={{
+              "--left": piece.left,
+              "--delay": piece.delay,
+              "--duration": piece.duration,
+              "--drift": piece.drift,
+              "--size": piece.size,
+              "--rotate": piece.rotate
+            }}
+          >
+            {piece.icon}
+          </span>
         ))}
       </div>
     </div>

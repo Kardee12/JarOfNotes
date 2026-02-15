@@ -33,6 +33,10 @@ body {
   background: var(--bg-base);
 }
 
+.app-shell.is-night {
+  color: #edf2ff;
+}
+
 .bg-slideshow {
   position: fixed;
   inset: 0;
@@ -59,6 +63,37 @@ body {
   background:
     linear-gradient(165deg, var(--overlay-start), var(--overlay-end)),
     radial-gradient(circle at 82% 15%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 45%);
+}
+
+.night-sky {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+
+.night-sky.is-visible {
+  opacity: 1;
+}
+
+.night-star {
+  position: absolute;
+  left: var(--left);
+  top: var(--top);
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 9px rgba(255, 255, 255, 0.85);
+  opacity: 0.38;
+  animation: twinkle var(--duration) ease-in-out var(--delay) infinite;
+}
+
+.night-star.is-far {
+  opacity: 0.25;
+  transform: scale(0.8);
 }
 
 .page {
@@ -320,6 +355,10 @@ h1 {
   line-height: 1.7;
 }
 
+.modal-content {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
 .photo-strip {
   margin-top: 20px;
   display: grid;
@@ -453,6 +492,27 @@ h1 {
   z-index: 30;
 }
 
+.heart-burst-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 32;
+}
+
+.heart-burst-piece {
+  position: absolute;
+  left: var(--left);
+  bottom: -12vh;
+  font-size: var(--size);
+  opacity: 0;
+  transform: rotate(var(--rotate));
+}
+
+.heart-burst-layer.is-active .heart-burst-piece {
+  animation: heartRise var(--duration) ease-out var(--delay) forwards;
+}
+
 .confetti-piece {
   position: absolute;
   top: -10vh;
@@ -530,6 +590,35 @@ h1 {
   100% {
     opacity: 0;
     transform: translate3d(var(--drift), 110vh, 0) rotate(var(--spin));
+  }
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.16;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.88;
+    transform: scale(1.18);
+  }
+  100% {
+    opacity: 0.24;
+    transform: scale(0.86);
+  }
+}
+
+@keyframes heartRise {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) rotate(var(--rotate));
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--drift), -115vh, 0) rotate(calc(var(--rotate) * 1.8));
   }
 }
 
