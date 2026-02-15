@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import { letters } from "./data/letters";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { letters, moments } from "./data/letters";
 
 const STORAGE_KEY = "open-when-opened-letters";
+const CONFETTI_COLORS = ["#f28cae", "#f7b267", "#6bbfd8", "#8fd694", "#9d8df1", "#f3e88b"];
 const DAILY_THEMES = [
   {
     base: "#f5e9ef",
@@ -70,10 +71,75 @@ function saveOpenedLetters(ids) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
 }
 
+function createConfettiPieces() {
+  return Array.from({ length: 36 }, (_, index) => ({
+    id: `${Date.now()}-${index}`,
+    left: `${Math.random() * 100}%`,
+    delay: `${Math.random() * 0.26}s`,
+    duration: `${1.7 + Math.random() * 1.1}s`,
+    drift: `${-110 + Math.random() * 220}px`,
+    rotate: `${Math.random() * 620 - 310}deg`,
+    size: `${7 + Math.random() * 9}px`,
+    color: CONFETTI_COLORS[index % CONFETTI_COLORS.length]
+  }));
+}
+
+function shufflePhotosWithTilt(photos) {
+  const shuffled = [...photos];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
+
+  return shuffled.map((photo) => ({
+    ...photo,
+    tilt: `${(Math.random() * 12 - 6).toFixed(2)}deg`
+  }));
+}
+
+function playCelebrationChime() {
+  try {
+    const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextConstructor) return;
+
+    const context = new AudioContextConstructor();
+    const notes = [523.25, 659.25, 783.99];
+    const start = context.currentTime;
+
+    notes.forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      const noteStart = start + index * 0.12;
+
+      oscillator.type = "triangle";
+      oscillator.frequency.value = frequency;
+      gainNode.gain.setValueAtTime(0.0001, noteStart);
+      gainNode.gain.exponentialRampToValueAtTime(0.18, noteStart + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, noteStart + 0.22);
+
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      oscillator.start(noteStart);
+      oscillator.stop(noteStart + 0.24);
+    });
+
+    window.setTimeout(() => {
+      context.close();
+    }, 900);
+  } catch {
+    // no-op
+  }
+}
+
 export default function App() {
   const backgroundPhotos = ["/photos/us-1.jpg", "/photos/us-2.jpg", "/photos/us-3.jpg", "/photos/us-4.jpg"];
   const [openedIds, setOpenedIds] = useState([]);
   const [activeLetterId, setActiveLetterId] = useState(null);
+  const [confettiPieces, setConfettiPieces] = useState([]);
+  const [displayPhotos, setDisplayPhotos] = useState([]);
+  const confettiTimeoutRef = useRef(null);
+
   const theme = useMemo(() => {
     const now = new Date();
     const startOfYear = new Date(now.getFullYear(), 0, 0);
@@ -91,8 +157,44 @@ export default function App() {
     [activeLetterId]
   );
 
+  useEffect(() => {
+    if (!activeLetter?.photos?.length) {
+      setDisplayPhotos([]);
+      return;
+    }
+
+    setDisplayPhotos(shufflePhotosWithTilt(activeLetter.photos));
+  }, [activeLetter]);
+
+  useEffect(
+    () => () => {
+      if (confettiTimeoutRef.current) {
+        window.clearTimeout(confettiTimeoutRef.current);
+      }
+    },
+    []
+  );
+
+  const triggerCelebration = () => {
+    setConfettiPieces(createConfettiPieces());
+    playCelebrationChime();
+
+    if (confettiTimeoutRef.current) {
+      window.clearTimeout(confettiTimeoutRef.current);
+    }
+
+    confettiTimeoutRef.current = window.setTimeout(() => {
+      setConfettiPieces([]);
+    }, 2400);
+  };
+
   const openLetter = (letterId) => {
+    const isFirstOpen = !openedIds.includes(letterId);
     setActiveLetterId(letterId);
+
+    if (isFirstOpen) {
+      triggerCelebration();
+    }
 
     setOpenedIds((prev) => {
       if (prev.includes(letterId)) return prev;
@@ -106,6 +208,11 @@ export default function App() {
   const resetOpenedLetters = () => {
     setOpenedIds([]);
     saveOpenedLetters([]);
+  };
+
+  const reshufflePolaroids = () => {
+    if (!activeLetter?.photos?.length) return;
+    setDisplayPhotos(shufflePhotosWithTilt(activeLetter.photos));
   };
 
   return (
@@ -169,6 +276,20 @@ export default function App() {
           })}
         </section>
 
+        <section className="moments-section" aria-label="Our moments timeline">
+          <p className="moments-kicker">Our Moments</p>
+          <h2>Little timeline of us</h2>
+          <div className="moments-list">
+            {moments.map((moment) => (
+              <article className="moment-item" key={moment.date + moment.title}>
+                <p className="moment-date">{moment.date}</p>
+                <h3>{moment.title}</h3>
+                <p>{moment.note}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         {activeLetter && (
           <div className="modal-backdrop" role="presentation" onClick={closeModal}>
             <article
@@ -187,10 +308,23 @@ export default function App() {
 
               <p className="modal-note">{activeLetter.note}</p>
 
-              {activeLetter.photos?.length > 0 && (
+              {displayPhotos.length > 0 && (
                 <section className="photo-strip" aria-label="Letter photos">
-                  {activeLetter.photos.map((photo) => (
-                    <img key={photo.src} src={photo.src} alt={photo.alt} loading="lazy" />
+                  <div className="photo-strip-head">
+                    <p>Polaroid Shuffle Mode</p>
+                    <button className="shuffle-button" type="button" onClick={reshufflePolaroids}>
+                      Shuffle Photos
+                    </button>
+                  </div>
+
+                  {displayPhotos.map((photo, index) => (
+                    <figure
+                      key={`${photo.src}-${photo.tilt}-${index}`}
+                      className="polaroid"
+                      style={{ "--tilt": photo.tilt }}
+                    >
+                      <img src={photo.src} alt={photo.alt} loading="lazy" />
+                    </figure>
                   ))}
                 </section>
               )}
@@ -204,6 +338,24 @@ export default function App() {
           </div>
         )}
       </main>
+
+      <div className={`confetti-layer ${confettiPieces.length > 0 ? "is-active" : ""}`} aria-hidden="true">
+        {confettiPieces.map((piece) => (
+          <span
+            key={piece.id}
+            className="confetti-piece"
+            style={{
+              "--left": piece.left,
+              "--delay": piece.delay,
+              "--duration": piece.duration,
+              "--drift": piece.drift,
+              "--spin": piece.rotate,
+              "--size": piece.size,
+              "--piece-color": piece.color
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }

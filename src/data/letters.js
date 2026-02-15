@@ -18,3 +18,11 @@ Happy Valentine's Day Simtard. I love you.
     promise: "I promise u i will write 1 message every few days lol"
   },
 ];
+
+export const moments = [
+  {
+    date: "November 2022",
+    title: "We Started Dating",
+    note: "bc u didn't want to have our anniversary on Halloween :O"
+  },
+];
