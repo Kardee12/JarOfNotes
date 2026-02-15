@@ -138,6 +138,7 @@ export default function App() {
   const [activeLetterId, setActiveLetterId] = useState(null);
   const [confettiPieces, setConfettiPieces] = useState([]);
   const [displayPhotos, setDisplayPhotos] = useState([]);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const confettiTimeoutRef = useRef(null);
 
   const theme = useMemo(() => {
@@ -147,9 +148,50 @@ export default function App() {
     const dayOfYear = Math.floor((now - startOfYear) / msPerDay);
     return DAILY_THEMES[dayOfYear % DAILY_THEMES.length];
   }, []);
+  const letterOfWeekId = useMemo(() => {
+    if (letters.length === 0) return null;
+    const now = new Date();
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    const daysSinceStart = Math.floor((now - startOfYear) / (24 * 60 * 60 * 1000));
+    const weekOfYear = Math.floor((daysSinceStart + startOfYear.getDay()) / 7);
+    return letters[weekOfYear % letters.length].id;
+  }, []);
+  const atlantaFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZone: "America/New_York",
+        timeZoneName: "short"
+      }),
+    []
+  );
+  const sanFranciscoFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: true,
+        timeZone: "America/Los_Angeles",
+        timeZoneName: "short"
+      }),
+    []
+  );
 
   useEffect(() => {
     setOpenedIds(loadOpenedLetters());
+  }, []);
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timer);
+    };
   }, []);
 
   const activeLetter = useMemo(
@@ -189,6 +231,8 @@ export default function App() {
   };
 
   const openLetter = (letterId) => {
+    if (letterId !== letterOfWeekId) return;
+
     const isFirstOpen = !openedIds.includes(letterId);
     setActiveLetterId(letterId);
 
@@ -245,6 +289,21 @@ export default function App() {
           <p className="hero-kicker">For You</p>
           <h1>Jar Of Notes</h1>
           <p className="hero-subtitle">Basically, the notes thingy but digitized</p>
+          <div className="time-panel" aria-label="Current time in Atlanta and San Francisco">
+            <div className="time-card">
+              <p className="time-city">Atlanta</p>
+              <p className="time-value">{atlantaFormatter.format(currentTime)}</p>
+            </div>
+            <div className="time-card">
+              <p className="time-city">San Francisco</p>
+              <p className="time-value">{sanFranciscoFormatter.format(currentTime)}</p>
+            </div>
+          </div>
+          {letterOfWeekId && (
+            <p className="hero-day-note">
+              Letter of the week: {letters.find((letter) => letter.id === letterOfWeekId)?.title}
+            </p>
+          )}
           <div className="hero-actions">
             <button
               className="reset-button"
@@ -260,17 +319,22 @@ export default function App() {
         <section className="letter-grid" aria-label="Open when letters">
           {letters.map((letter) => {
             const isOpened = openedIds.includes(letter.id);
+            const isLetterOfTheWeek = letter.id === letterOfWeekId;
             return (
               <button
                 key={letter.id}
-                className={`letter-card ${isOpened ? "is-opened" : ""}`}
+                className={`letter-card ${isOpened ? "is-opened" : ""} ${isLetterOfTheWeek ? "is-today" : "is-locked"}`}
                 onClick={() => openLetter(letter.id)}
                 type="button"
+                disabled={!isLetterOfTheWeek}
+                aria-disabled={!isLetterOfTheWeek}
               >
                 <span className="wax-seal" aria-hidden="true">❤</span>
                 <h2>{letter.title}</h2>
-                <p>{letter.preview}</p>
-                <span className="letter-status">{isOpened ? "Opened" : "Unopened"}</span>
+                <p>{isLetterOfTheWeek ? letter.preview : "Locked until another week."}</p>
+                <span className="letter-status">
+                  {isLetterOfTheWeek ? (isOpened ? "Opened" : "This Week") : "Locked"}
+                </span>
               </button>
             );
           })}

@@ -100,6 +100,46 @@ h1 {
   color: var(--text-muted);
 }
 
+.hero-day-note {
+  margin-top: 10px;
+  margin-bottom: 0;
+  color: var(--accent-deep);
+  font-weight: 700;
+}
+
+.time-panel {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
+  gap: 10px;
+  width: min(560px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.time-card {
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 10px 12px;
+}
+
+.time-city {
+  margin: 0;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.time-value {
+  margin: 4px 0 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent-deep);
+}
+
 .hero-actions {
   margin-top: 14px;
 }
@@ -154,6 +194,27 @@ h1 {
   transform: translateY(-2px);
   box-shadow: 0 14px 28px rgba(87, 44, 60, 0.18);
   border-color: var(--accent);
+}
+
+.letter-card.is-today {
+  border-color: var(--accent);
+}
+
+.letter-card.is-locked {
+  filter: blur(1.3px) saturate(0.78);
+  opacity: 0.78;
+  transform: scale(0.995);
+  box-shadow: 0 8px 16px rgba(87, 44, 60, 0.1);
+}
+
+.letter-card.is-locked:hover {
+  transform: scale(0.995);
+  border-color: var(--card-border);
+  box-shadow: 0 8px 16px rgba(87, 44, 60, 0.1);
+}
+
+.letter-card:disabled {
+  cursor: not-allowed;
 }
 
 .letter-card h2 {
@@ -487,6 +548,10 @@ h1 {
 
   .reset-button {
     font-size: 0.76rem;
+  }
+
+  .time-panel {
+    grid-template-columns: 1fr;
   }
 
   .photo-strip-head {
