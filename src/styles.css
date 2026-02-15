@@ -366,42 +366,6 @@ h1 {
   gap: 10px;
 }
 
-.photo-strip-head {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.photo-strip-head p {
-  margin: 0;
-  font-size: 0.84rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: 700;
-}
-
-.shuffle-button {
-  border: 1px solid var(--card-border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.6);
-  color: var(--accent-deep);
-  font-size: 0.76rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 7px 12px;
-  cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.shuffle-button:hover {
-  transform: translateY(-1px);
-  border-color: var(--accent);
-}
-
 .polaroid {
   margin: 0;
   padding: 10px 10px 18px;
@@ -643,12 +607,4 @@ h1 {
     grid-template-columns: 1fr;
   }
 
-  .photo-strip-head {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .shuffle-button {
-    width: 100%;
-  }
 }

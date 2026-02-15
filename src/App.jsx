@@ -330,11 +330,6 @@ export default function App() {
     saveOpenedLetters([]);
   };
 
-  const reshufflePolaroids = () => {
-    if (!activeLetter?.photos?.length) return;
-    setDisplayPhotos(shufflePhotosWithTilt(activeLetter.photos));
-  };
-
   return (
     <div
       className={`app-shell ${isNightMode ? "is-night" : ""}`}
@@ -466,13 +461,6 @@ export default function App() {
 
                 {displayPhotos.length > 0 && (
                   <section className="photo-strip" aria-label="Letter photos">
-                    <div className="photo-strip-head">
-                      <p>Polaroid Shuffle Mode</p>
-                      <button className="shuffle-button" type="button" onClick={reshufflePolaroids}>
-                        Shuffle Photos
-                      </button>
-                    </div>
-
                     {displayPhotos.map((photo, index) => (
                       <figure
                         key={`${photo.src}-${photo.tilt}-${index}`}
