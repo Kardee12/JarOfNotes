@@ -305,8 +305,6 @@ export default function App() {
   };
 
   const openLetter = (letterId) => {
-    if (letterId !== letterOfWeekId) return;
-
     const isFirstOpen = !openedIds.includes(letterId);
     setActiveLetterId(letterId);
 
@@ -387,7 +385,7 @@ export default function App() {
           </div>
           {letterOfWeekId && (
             <p className="hero-day-note">
-              Letter of the week: {letters.find((letter) => letter.id === letterOfWeekId)?.title}
+              Featured this week: {letters.find((letter) => letter.id === letterOfWeekId)?.title}
             </p>
           )}
           <div className="hero-actions">
@@ -409,17 +407,15 @@ export default function App() {
             return (
               <button
                 key={letter.id}
-                className={`letter-card ${isOpened ? "is-opened" : ""} ${isLetterOfTheWeek ? "is-today" : "is-locked"}`}
+                className={`letter-card ${isOpened ? "is-opened" : ""} ${isLetterOfTheWeek ? "is-today" : ""}`}
                 onClick={() => openLetter(letter.id)}
                 type="button"
-                disabled={!isLetterOfTheWeek}
-                aria-disabled={!isLetterOfTheWeek}
               >
                 <span className="wax-seal" aria-hidden="true">❤</span>
                 <h2>{letter.title}</h2>
-                <p>{isLetterOfTheWeek ? letter.preview : "Locked until another week."}</p>
+                <p>{letter.preview}</p>
                 <span className="letter-status">
-                  {isLetterOfTheWeek ? (isOpened ? "Opened" : "This Week") : "Locked"}
+                  {isOpened ? "Opened" : isLetterOfTheWeek ? "This Week" : "Ready"}
                 </span>
               </button>
             );
