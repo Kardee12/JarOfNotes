@@ -17,6 +17,17 @@ Happy Valentine's Day Simtard. I love you.
     ],
     promise: "I promise u i will write 1 message every few days lol"
   },
+  {
+    id: "the-next-note",
+    title: "the next note",
+    preview: "i suck at writing",
+    note:  `
+    Hi Simtard. I lw had to get this note working. Lw this one is just a small one lol. I miss you and I hope today is being nice to you.
+    You make my days feel calmer fr, even when everything else is chaotic.
+    I’m really grateful for you and I love you a ton.
+    That’s it, just wanted to remind you :)
+    `
+  }
 ];
 
 export const moments = [
