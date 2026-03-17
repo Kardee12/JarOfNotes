@@ -27,7 +27,23 @@ Happy Valentine's Day Simtard. I love you.
     I’m really grateful for you and I love you a ton.
     That’s it, just wanted to remind you :)
     `
-  }
+  },
+  {
+  id: "random-check-in",
+  title: "random note",
+  preview: "just thinking about you",
+  note: `
+  Hi Simtard. Lw this is just a random message but I was thinking about you and wanted to write something.
+
+  I feel like I don’t always say this enough, but you genuinely make my life better just by being in it. Even on normal days, knowing I can talk to you or see you makes everything feel a lot less stressful.
+
+  I also like how easy things feel with you. Like I don’t have to overthink everything or try too hard — I can just be myself, and that means a lot to me.
+
+  I know we both get busy and don’t always get as much time together as we want, but every time we do, it reminds me how much I care about you.
+
+  Anyways lw I’m yapping but yeah — I miss you, I appreciate you a lot, and I love you :)
+  `
+}
 ];
 
 export const moments = [
