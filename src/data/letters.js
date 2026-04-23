@@ -43,6 +43,24 @@ Happy Valentine's Day Simtard. I love you.
 
   Anyways lw I’m yapping but yeah — I miss you, I appreciate you a lot, and I love you :)
   `
+},
+{
+  id: "keeping-my-promise",
+  title: "keeping my promise",
+  preview: "u got this",
+  note: `
+  Hi Sim. I told you I’d write you notes so here I am.
+
+  This one ain’t long bc I’m tired of looking at a screen rn, but I still wanted to write something.
+
+  I know you’ve been a bit anxious lately, but I hope you know you’re genuinely doing really well. Like even when you don’t feel it, I see it.
+
+  You handle a lot and you still keep going, and that’s something I really respect about you.
+
+  Also just in general — you’re smart, you’re capable, and you figure things out even when it feels messy.
+
+  I’m always here for you btw, no matter what :)
+  `
 }
 ];
 
